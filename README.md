@@ -74,9 +74,9 @@ streamlit run app.py
 
 ---
 
-## Screenshots
+## Link
 
-![Uploading image.png…]()
+https://crypto-prediction-apps.streamlit.app/
 
 ---
 
