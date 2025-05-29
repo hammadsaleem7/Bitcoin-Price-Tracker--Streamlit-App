@@ -35,8 +35,8 @@ This is a simple **Streamlit** web application that tracks Bitcoin price data, a
 Make sure you have Python 3.8+ installed.
 
 ```bash
-git clone https://github.com/your-username/bitcoin-price-predictor.git
-cd bitcoin-price-predictor
+git clone https://github.com/hammadsaleem7/Bitcoin-Price-Tracker--Streamlit-App.git
+cd Bitcoin-Price-Tracker--Streamlit-App
 pip install -r requirements.txt
 streamlit run app.py
 ```
