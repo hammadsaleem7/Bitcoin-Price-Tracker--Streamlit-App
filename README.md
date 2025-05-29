@@ -91,7 +91,3 @@ This project is licensed under the MIT License.
 * [yfinance](https://github.com/ranaroussi/yfinance) for financial data
 * [Streamlit](https://streamlit.io/) for easy app deployment
 * [VADER Sentiment](https://github.com/cjhutto/vaderSentiment) for sentiment analysis
-
----
-
-If you want, I can help you generate this file in markdown format or tailor it to your exact repo details!
