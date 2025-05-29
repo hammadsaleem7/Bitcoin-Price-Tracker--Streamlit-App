@@ -99,7 +99,7 @@ try:
         if np.isnan(features).any():
             st.warning("Latest data incomplete, cannot predict.")
         else:
-            prediction = model.predict([features])[0]
+            prediction = model.predict(features.reshape(1, -1))[0]
             if prediction == 1:
                 st.success("🔼 Bitcoin is predicted to go UP tomorrow.")
             else:
@@ -107,3 +107,4 @@ try:
 
 except Exception as e:
     st.error(f"Prediction error: {e}")
+
