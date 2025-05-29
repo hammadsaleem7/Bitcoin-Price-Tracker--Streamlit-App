@@ -48,3 +48,38 @@ for title, score, link in news:
 
 st.markdown("---")
 st.caption("This version excludes ML prediction to remain Streamlit Cloud compatible.")
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
+st.subheader("📉 Bitcoin Movement Prediction (Up/Down)")
+
+def prepare_features(data):
+    df = data.copy()
+    df['Return'] = df['Close'].pct_change()
+    df['MA5'] = df['Close'].rolling(window=5).mean()
+    df['MA10'] = df['Close'].rolling(window=10).mean()
+    df.dropna(inplace=True)
+
+    df['Target'] = (df['Close'].shift(-1) > df['Close']).astype(int)
+    X = df[['Return', 'MA5', 'MA10']]
+    y = df['Target']
+    return train_test_split(X, y, test_size=0.2, shuffle=False)
+
+try:
+    X_train, X_test, y_train, y_test = prepare_features(data)
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+
+    latest_data = data.copy().tail(10)
+    latest_return = latest_data['Close'].pct_change().iloc[-1]
+    ma5 = latest_data['Close'].rolling(window=5).mean().iloc[-1]
+    ma10 = latest_data['Close'].rolling(window=10).mean().iloc[-1]
+
+    pred = model.predict([[latest_return, ma5, ma10]])[0]
+    prediction_text = "🔼 Bitcoin will likely go UP tomorrow." if pred == 1 else "🔽 Bitcoin will likely go DOWN tomorrow."
+    st.success(prediction_text)
+
+except Exception as e:
+    st.warning("Not enough data for prediction. Try expanding the date range.")
+
