@@ -76,7 +76,7 @@ streamlit run app.py
 
 ## Screenshots
 
-*Add your app screenshots here*
+![Uploading image.png…]()
 
 ---
 
