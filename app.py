@@ -15,7 +15,7 @@ st.title("📈 Bitcoin Price Tracker with Prediction & News Sentiment")
 
 # -------------------- DATE RANGE --------------------
 end_date = datetime.date.today()
-start_date = end_date - datetime.timedelta(days=365)  # default to last 1 year
+start_date = end_date - datetime.timedelta(days=365 * 3)  # last 3 years
 
 st.sidebar.header("Date Range")
 start_date = st.sidebar.date_input("Start Date", start_date)
@@ -29,6 +29,14 @@ def get_crypto_data(symbol, start, end):
 crypto = "BTC-USD"
 data = get_crypto_data(crypto, start_date, end_date)
 
+# -------------------- DATA CHECK --------------------
+if data.empty or len(data.dropna()) < 20:
+    st.error("❌ Not enough data returned from yfinance. Try again later or check your date range.")
+    st.stop()
+
+st.write("✅ Latest BTC data preview:")
+st.dataframe(data.tail())
+
 # -------------------- PRICE CHART --------------------
 st.subheader("📊 Bitcoin Price Chart")
 st.line_chart(data['Close'])
@@ -37,7 +45,7 @@ st.line_chart(data['Close'])
 def fetch_news_sentiment(query="bitcoin"):
     url = f"https://news.google.com/rss/search?q={query}+cryptocurrency"
     res = requests.get(url)
-    soup = BeautifulSoup(res.content, "xml")  # use 'xml' parser
+    soup = BeautifulSoup(res.content, "xml")
     articles = soup.findAll('item')[:5]
 
     analyzer = SentimentIntensityAnalyzer()
@@ -67,17 +75,17 @@ def prepare_features(data):
     df['MA5'] = df['Close'].rolling(window=5).mean()
     df['MA10'] = df['Close'].rolling(window=10).mean()
     df.dropna(inplace=True)
-
     df['Target'] = (df['Close'].shift(-1) > df['Close']).astype(int)
     X = df[['Return', 'MA5', 'MA10']]
     y = df['Target']
     return train_test_split(X, y, test_size=0.2, shuffle=False)
 
 try:
-    if len(data) < 20:
-        st.warning("Not enough data. Try selecting at least 60 days.")
+    X_train, X_test, y_train, y_test = prepare_features(data)
+
+    if len(X_train) == 0:
+        st.warning("Not enough features after processing. Try a broader date range.")
     else:
-        X_train, X_test, y_train, y_test = prepare_features(data)
         model = LogisticRegression()
         model.fit(X_train, y_train)
 
@@ -86,9 +94,12 @@ try:
         ma5 = latest_data['Close'].rolling(window=5).mean().iloc[-1]
         ma10 = latest_data['Close'].rolling(window=10).mean().iloc[-1]
 
-        pred = model.predict([[latest_return, ma5, ma10]])[0]
-        prediction_text = "🔼 Bitcoin will likely go **UP** tomorrow." if pred == 1 else "🔽 Bitcoin will likely go **DOWN** tomorrow."
-        st.success(prediction_text)
+        if np.isnan([latest_return, ma5, ma10]).any():
+            st.warning("Latest data not sufficient for prediction.")
+        else:
+            pred = model.predict([[latest_return, ma5, ma10]])[0]
+            prediction_text = "🔼 Bitcoin will likely go **UP** tomorrow." if pred == 1 else "🔽 Bitcoin will likely go **DOWN** tomorrow."
+            st.success(prediction_text)
 
 except Exception as e:
     st.error(f"Prediction failed: {e}")
